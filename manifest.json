@@ -1,0 +1,263 @@
+{
+  "dxt_version": "0.1",
+  "name": "Memory Bank v04 Enhanced",
+  "version": "1.4.0",
+  "description": "Enhanced Memory Bank MCP with smart SQL truncation, multi-table extraction, and search prioritization",
+  "long_description": "Memory Bank v04 Enhanced provides persistent AI collaboration memory with revolutionary content access improvements. Version 1.4.0 introduces smart context-aware SQL truncation that adapts to query patterns, enhanced multi-table content extraction with priority search order (documents_v2 → discussions → artifacts), and intelligent search prioritization ensuring context.db content is found first. Features automatic Memory Bank command awareness, seamless user experience with automatic suggestions, and complete resolution of content accessibility limitations. Includes comprehensive schema verification, backup system, template specifications, and full-text search across all content types. Production-ready with backward compatibility and enhanced user guidance.",
+  "author": {
+    "name": "Memory Bank Development Team",
+    "email": "support@memory-bank.dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/georgemagnuson/memory-bank_v04"
+  },
+  "homepage": "https://github.com/georgemagnuson/memory-bank_v04",
+  "documentation": "https://github.com/georgemagnuson/memory-bank_v04/blob/main/README.md",
+  "support": "https://github.com/georgemagnuson/memory-bank_v04/issues",
+  "icon": "icon.png",
+  "server": {
+    "type": "python",
+    "entry_point": "server/main.py",
+    "mcp_config": {
+      "command": "/Users/georgemagnuson/.direnv/python-3.13.5/bin/python3",
+      "args": [
+        "${__dirname}/server/main.py"
+      ],
+      "env": {
+        "PYTHONPATH": "${__dirname}/lib:${__dirname}/server:${__dirname}"
+      }
+    }
+  },
+  "user_config": {
+    "default_project_path": {
+      "type": "directory",
+      "title": "Default Project Directory",
+      "description": "Default directory for Memory Bank project initialization",
+      "required": false,
+      "default": "${HOME}/Documents/Projects"
+    },
+    "auto_save_enabled": {
+      "type": "boolean",
+      "title": "Enable Auto-Save",
+      "description": "Automatically save context after each exchange",
+      "required": false,
+      "default": true
+    },
+    "centralized_backup_path": {
+      "type": "directory",
+      "title": "Centralized Backup Directory",
+      "description": "Directory for centralized weekly/monthly backups (defaults to ~/Documents/MemoryBankBackups)",
+      "required": false,
+      "default": "${HOME}/Documents/MemoryBankBackups"
+    },
+    "default_sql_truncation_limit": {
+      "type": "number",
+      "title": "Default SQL Truncation Limit",
+      "description": "Default character limit for SQL query results (0 = no truncation, null = smart defaults)",
+      "required": false,
+      "default": null
+    },
+    "enable_command_awareness": {
+      "type": "boolean", 
+      "title": "Enable Automatic Command Awareness",
+      "description": "Automatically initialize Memory Bank command awareness at session start",
+      "required": false,
+      "default": true
+    }
+  },
+  "tools": [
+    {
+      "name": "memory_bank_help",
+      "description": "Show comprehensive help for all Memory Bank MCP commands and features"
+    },
+    {
+      "name": "work_on_project", 
+      "description": "Switch to working on a specific project with memory-bank integration and automatic command awareness"
+    },
+    {
+      "name": "search_all_content",
+      "description": "Universal full-text search with context.db prioritization and ranking (structured content → imported markdown → external)"
+    },
+    {
+      "name": "log_decision",
+      "description": "Log an architectural or implementation decision with tags and rationale"
+    },
+    {
+      "name": "query_decisions", 
+      "description": "Search and retrieve logged decisions with full-text search"
+    },
+    {
+      "name": "get_memory_bank_status",
+      "description": "Get current status and statistics of the memory bank database"
+    },
+    {
+      "name": "memory_bank_sql_query",
+      "description": "Execute SQL query with smart context-aware truncation and configurable limits (max_content_length parameter)"
+    },
+    {
+      "name": "extract_large_document",
+      "description": "Extract large document content with multi-table search priority: documents_v2 → discussions → artifacts"
+    },
+    {
+      "name": "migrate_project_md_files",
+      "description": "Migrate existing .md files from a project to Memory Bank MCP v2 database"
+    },
+    {
+      "name": "import_markdown_files",
+      "description": "Import markdown files into the database for full-text search"
+    },
+    {
+      "name": "generate_enhanced_session_starter",
+      "description": "Generate session starter with database-enhanced context"
+    },
+    {
+      "name": "backup_context_db",
+      "description": "Create manual or scheduled backups of context.db with integrity verification"
+    },
+    {
+      "name": "list_backups",
+      "description": "List all available backups with metadata and integrity status"
+    },
+    {
+      "name": "store_template_spec",
+      "description": "Store complete template specifications with metadata for spec-workflow systems"
+    },
+    {
+      "name": "discover_templates",
+      "description": "Discover templates using FTS search and filtering by workflow system, phase, and project type"
+    },
+    {
+      "name": "verify_and_repair_schema",
+      "description": "Manually verify and repair project schema to ensure complete Memory Bank v04 structure"
+    },
+    {
+      "name": "initialize_memory_bank_session",
+      "description": "Initialize Memory Bank command awareness for enhanced user experience"
+    },
+    {
+      "name": "memory_bank_search_help",
+      "description": "Show help for Memory Bank search prioritization and command awareness features"
+    },
+    {
+      "name": "sql_truncation_help",
+      "description": "Show help for enhanced SQL truncation features and content access options"
+    }
+  ],
+  "keywords": [
+    "memory-bank",
+    "context-management", 
+    "full-text-search",
+    "project-intelligence",
+    "session-persistence",
+    "schema-verification",
+    "schema-repair",
+    "smart-truncation",
+    "sql-enhancement", 
+    "multi-table-extraction",
+    "search-prioritization",
+    "command-awareness",
+    "user-experience",
+    "content-accessibility",
+    "database-management",
+    "spec-workflow",
+    "documents-v2",
+    "semantic-search",
+    "backup-system",
+    "template-specifications"
+  ],
+  "license": "MIT",
+  "changelog": {
+    "1.4.0": {
+      "date": "2025-07-26",
+      "changes": [
+        "🚀 MAJOR: Implemented smart context-aware SQL truncation system",
+        "🚀 MAJOR: Enhanced extract_large_document with multi-table search priority (documents_v2 → discussions → artifacts)",
+        "🚀 MAJOR: Added search prioritization system - context.db content searched FIRST, always",
+        "🚀 MAJOR: Implemented automatic Memory Bank command awareness - Claude knows all commands at session start",
+        "✅ RESOLVED: SQL query truncation bug - content no longer limited to 100 characters",
+        "✅ RESOLVED: Extract function failures - now searches across all content tables with fuzzy matching",
+        "✅ RESOLVED: Search prioritization issues - structured content prioritized over external files",
+        "✅ RESOLVED: Manual prompting requirement - automatic intelligent command routing",
+        "Added configurable truncation limits with max_content_length parameter (None = no truncation)",
+        "Added smart truncation strategies: content-focused (400 chars), overview (80 chars), balanced (150 chars)",
+        "Added automatic extract suggestions for truncated SQL results with ready-to-use commands",
+        "Added UUID-based direct lookup and fuzzy title search with progressive matching",
+        "Added enhanced metadata extraction with table-specific information and safe filename generation",
+        "Added clear priority indicators in search results showing context.db vs imported vs external",
+        "Added performance metrics and search strategy reporting",
+        "Added session initialization functions for immediate command awareness",
+        "Added comprehensive user feedback response system with complete issue resolution",
+        "Added smart query analysis with intent detection and automatic routing",
+        "Added seamless workflow integration from SQL query to full content access",
+        "Added enhanced help system with contextual guidance and quick access commands",
+        "Enhanced user experience with automatic suggestions and clear truncation indicators",
+        "Production-ready implementation with comprehensive error handling and backward compatibility",
+        "Complete solution for content accessibility limitations identified in user feedback",
+        "Transforms Memory Bank from functional to comprehensive user-friendly content management platform"
+      ]
+    },
+    "1.3.0": {
+      "date": "2025-07-23",
+      "changes": [
+        "Added comprehensive automatic schema verification and repair system",
+        "Integrated auto-repair into work_on_project() for seamless schema completion",
+        "Added verify_and_repair_schema() manual tool for troubleshooting",
+        "Implemented safe additive schema repair (adds missing tables/indexes without modifying existing data)",
+        "Added automatic backup creation before schema repairs for safety",
+        "Enhanced project status messages to show schema verification results",
+        "Created Memory Bank v04 Complete Schema template for authoritative reference",
+        "Added detection and repair of missing core tables (documents_v2, semantic_equivalents)",
+        "Implemented FTS table verification and repair for full-text search capabilities",
+        "Added comprehensive error handling and repair reporting",
+        "Removed redundant functions: switch_to_project, resume_project, continue_project, phase1_completion_status",
+        "Simplified API to single work_on_project() function with enhanced capabilities",
+        "Schema verification ensures all projects have complete 42-table structure"
+      ]
+    },
+    "1.2.1": {
+      "date": "2025-07-22",
+      "changes": [
+        "Fixed template system initialization issues in DXT packaging",
+        "Ensured all Phase 1 tools (backup, template, status) are properly included",
+        "Verified template_spec_manager.py and phase1_tools.py integration",
+        "Fixed context_manager.database_path property access for template system",
+        "All template tools should now work: store_template_spec, discover_templates, phase1_completion_status"
+      ]
+    },
+    "1.2.0": {
+      "date": "2025-07-22",
+      "changes": [
+        "Added extract_large_document tool to automatically bypass SQL truncation limits",
+        "Large documents (>100 chars) now automatically exportable to /tmp/ for complete reading",
+        "Enhanced SQL query workflow with automatic file extraction capability",
+        "Improved large content handling for documents_v2 table access",
+        "Added proper SQL escaping and safety checks for document extraction"
+      ]
+    },
+    "1.1.0": {
+      "date": "2025-07-22",
+      "changes": [
+        "Added comprehensive backup system with local daily and centralized weekly/monthly backups",
+        "Implemented complete template specification storage and management system", 
+        "Added 5 new MCP tools: backup_context_db, list_backups, store_template_spec, discover_templates, phase1_completion_status",
+        "Enhanced documents_v2 schema with spec workflow fields ready",
+        "Completed semantic mappings for spec workflow terminology (8 mappings, 130+ terms)",
+        "Achieved 100% Phase 1 spec-workflow readiness",
+        "Added backup verification and integrity checking",
+        "Implemented template discovery with FTS search and filtering",
+        "Added centralized backup configuration option",
+        "Ready for SPEC-WORKFLOW MCP integration"
+      ]
+    },
+    "1.0.0": {
+      "date": "2025-07-20", 
+      "changes": [
+        "Initial release with documents_v2 enhanced schema",
+        "Full-text search across all content types",
+        "Cross-project intelligence and session continuity",
+        "Basic spec workflow integration readiness"
+      ]
+    }
+  }
+}

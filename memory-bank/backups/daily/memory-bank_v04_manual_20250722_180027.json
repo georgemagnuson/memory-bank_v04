@@ -1,0 +1,13 @@
+{
+  "project_name": "memory-bank_v04",
+  "project_path": "/Users/georgemagnuson/Documents/GitHub/memory-bank_v04",
+  "backup_timestamp": "2025-07-22T18:00:27.461622",
+  "database_stats": {
+    "discussions_count": 21,
+    "artifacts_count": 0,
+    "documents_v2_count": 10,
+    "chat_sessions_count": 28,
+    "file_size_bytes": 507904
+  },
+  "memory_bank_version": "1.0.0"
+}

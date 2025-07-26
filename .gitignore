@@ -1,0 +1,67 @@
+# Memory Bank MCP v2 - Git Ignore
+# Generated: 2025-07-13.1843
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+.venv/
+env/
+venv/
+ENV/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Test databases and temp files
+test_*.db
+/tmp/
+*.tmp
+
+# Database files (exclude future database files, but allow specific project databases)
+# memory-bank/context.db is committed as project development database
+
+# Environment variables
+.env
+.env.local
+
+# Memory Bank test data
+test_memory_bank/
