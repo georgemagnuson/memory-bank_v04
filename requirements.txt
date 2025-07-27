@@ -1,22 +1,53 @@
-# Memory Bank MCP v2 Requirements
+# Memory Bank MCP v1.4.0 Requirements
 # Enhanced AI Collaboration Memory System
-# Generated: 2025-07-13.1843
+# Generated: 2025-07-27.2350
 
-# Core MCP dependencies
-mcp>=1.0.0
+# Core MCP Framework
+mcp>=1.12.0
 
-# Database for persistent storage
-aiosqlite>=0.19.0
+# Database Operations
+aiosqlite>=0.21.0
 
-# UUID generation for cross-project references (built-in, no install needed)
-# JSON handling (built-in, no install needed)
+# HTTP Client and Server Components
+httpx>=0.28.1
+httpcore>=1.0.9
+h11>=0.16.0
+uvicorn>=0.35.0
+starlette>=0.47.2
+sse-starlette>=2.4.1
 
-# Date/time handling for timestamps
-python-dateutil>=2.8.0
+# Data Validation and Settings
+pydantic>=2.11.7
+pydantic-core>=2.33.2
+pydantic-settings>=2.10.1
+jsonschema>=4.25.0
+jsonschema-specifications>=2025.4.1
 
-# Path handling and file operations (built-in pathlib)
+# Async and Type Support
+anyio>=4.9.0
+sniffio>=1.3.1
+typing-extensions>=4.14.1
+annotated-types>=0.7.0
 
-# Development dependencies (optional)
-pytest>=7.0.0
-pytest-asyncio>=0.21.0
-black>=22.0.0
+# Utilities
+python-dateutil>=2.9.0
+python-dotenv>=1.1.1
+python-multipart>=0.0.20
+click>=8.2.1
+attrs>=25.3.0
+certifi>=2025.7.14
+idna>=3.10
+six>=1.17.0
+
+# Reference and Data Structures
+referencing>=0.36.2
+rpds-py>=0.26.0
+
+# HTTP Streaming
+httpx-sse>=0.4.1
+
+# Development Dependencies (optional - install with pip install -e ".[dev]")
+# pytest>=7.0.0
+# pytest-asyncio>=0.21.0
+# black>=22.0.0
+# mypy>=1.0.0

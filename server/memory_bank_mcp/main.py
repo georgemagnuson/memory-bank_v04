@@ -1,17 +1,38 @@
 #!/usr/bin/env python3
 """
-Memory Bank v04 Enhanced MCP Server - Modular v1.4.0
+Memory Bank v04 Enhanced MCP Server - Modular v1.4.0 + Phase 2 COMPLETE
 Filename: main.py
 Generated: 2025-07-26.1755
+Updated: 2025-07-27.2018 (Phase 2 COMPLETE - All Tools Integration)
 Purpose: Clean modular Memory Bank MCP server with preserved v1.4.0 enhancements
-         Integrates core_tools, sql_tools, and project_tools modules
+         Integrates all Phase 2 modules: core_tools, sql_tools, project_tools, 
+         content_tools, migration_tools, and backup_tools
 
 v1.4.0 Features Preserved:
 - Smart context-aware SQL truncation system
 - Enhanced multi-table content extraction with priority
 - Search prioritization (context.db first)
 - Automatic Memory Bank command awareness
-- Complete tool restoration (17+ tools from 4)
+- Complete tool restoration (33 tools total)
+
+Phase 2 Content Tools Added (6 tools):
+- Universal full-text search across all content types
+- Markdown file import with duplicate detection
+- FTS5 virtual table synchronization
+- Intelligent bulk markdown discovery and import
+- Project documentation import with categorization
+- Comprehensive markdown import reporting
+
+Phase 2 Migration Tools Added (3 tools):
+- Legacy project migration from .md files to database
+- Migration candidate analysis with readiness scoring
+- Specific project migration with FTS integration
+
+Phase 2 Backup Tools Added (4 tools):
+- Database backup creation with compression and verification
+- Backup inventory listing with metadata and integrity checks
+- Template specification storage with versioning
+- Template discovery with full-text search capabilities
 """
 
 import logging
@@ -39,6 +60,9 @@ from memory_bank_mcp.context_manager import ContextManager
 from memory_bank_mcp.core_tools import CoreTools
 from memory_bank_mcp.sql_tools import SQLTools
 from memory_bank_mcp.project_tools import ProjectTools
+from memory_bank_mcp.content_tools import ContentTools
+from memory_bank_mcp.migration_tools import MigrationTools
+from memory_bank_mcp.backup_tools import BackupTools
 
 # Initialize FastMCP server
 server = FastMCP("Memory Bank v04 Enhanced")
@@ -51,6 +75,9 @@ current_project_path: Optional[str] = None
 core_tools: Optional[CoreTools] = None
 sql_tools: Optional[SQLTools] = None
 project_tools: Optional[ProjectTools] = None
+content_tools: Optional[ContentTools] = None
+migration_tools: Optional[MigrationTools] = None
+backup_tools: Optional[BackupTools] = None
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -58,13 +85,16 @@ logger = logging.getLogger(__name__)
 
 def initialize_tool_modules():
     """Initialize modular tool instances when context is available"""
-    global core_tools, sql_tools, project_tools
+    global core_tools, sql_tools, project_tools, content_tools, migration_tools, backup_tools
     
     if context_manager and context_manager.is_initialized():
         core_tools = CoreTools(context_manager)
         sql_tools = SQLTools(context_manager)
         project_tools = ProjectTools(context_manager)
-        logger.info("✅ Modular v1.4.0 tools initialized")
+        content_tools = ContentTools(context_manager)
+        migration_tools = MigrationTools(context_manager)
+        backup_tools = BackupTools(context_manager)
+        logger.info("✅ Modular v1.4.0 tools initialized (Phase 2 Complete: Content + Migration + Backup Tools)")
 
 # =============================================================================
 # CORE STATUS AND PROJECT MANAGEMENT TOOLS
@@ -357,6 +387,106 @@ async def force_context_flush() -> str:
         return "❌ Project tools not initialized. Use `work_on_project()` first."
     return await project_tools.force_context_flush()
 
+# Content Tools Integration (Phase 2 - 6 new tools)
+@server.tool()
+async def search_all_content(query: str, limit: int = 20, content_types: str = "all") -> str:
+    """Universal full-text search across all content types with ranking and highlighting"""
+    if not content_tools:
+        return "❌ Content tools not initialized. Use `work_on_project()` first."
+    return await content_tools.search_all_content(query, limit, content_types)
+
+@server.tool()
+async def sync_fts_tables() -> str:
+    """Synchronize FTS5 virtual tables with main content tables"""
+    if not content_tools:
+        return "❌ Content tools not initialized. Use `work_on_project()` first."
+    return await content_tools.sync_fts_tables()
+
+@server.tool()
+async def import_markdown_files(directory_path: str, file_pattern: str = "*.md", recursive: bool = True) -> str:
+    """Import markdown files into the database for full-text search"""
+    if not content_tools:
+        return "❌ Content tools not initialized. Use `work_on_project()` first."
+    return await content_tools.import_markdown_files(directory_path, file_pattern, recursive)
+
+@server.tool()
+async def discover_and_import_all_markdown(directory_path: str, exclude_patterns: str = "", max_file_size_mb: int = 10) -> str:
+    """Discover and import all markdown files in a directory with intelligent filtering"""
+    if not content_tools:
+        return "❌ Content tools not initialized. Use `work_on_project()` first."
+    return await content_tools.discover_and_import_all_markdown(directory_path, exclude_patterns, max_file_size_mb)
+
+@server.tool()
+async def import_project_documentation(include_external: bool = True) -> str:
+    """Import all documentation files from the current project for comprehensive FTS"""
+    if not content_tools:
+        return "❌ Content tools not initialized. Use `work_on_project()` first."
+    return await content_tools.import_project_documentation(include_external)
+
+@server.tool()
+async def generate_markdown_import_report() -> str:
+    """Generate a comprehensive report of imported markdown files"""
+    if not content_tools:
+        return "❌ Content tools not initialized. Use `work_on_project()` first."
+    return await content_tools.generate_markdown_import_report()
+
+# Migration Tools Integration (Phase 2 - 3 new tools)
+@server.tool()
+async def analyze_migration_candidates() -> str:
+    """Analyze potential projects for migration from .md to Memory Bank MCP v2"""
+    if not migration_tools:
+        return "❌ Migration tools not initialized. Use `work_on_project()` first."
+    return await migration_tools.analyze_migration_candidates()
+
+@server.tool()
+async def migrate_project_md_files(project_path: str, dry_run: bool = False) -> str:
+    """Migrate existing .md files from a project to Memory Bank MCP v2 database"""
+    if not migration_tools:
+        return "❌ Migration tools not initialized. Use `work_on_project()` first."
+    return await migration_tools.migrate_project_md_files(project_path, dry_run)
+
+@server.tool()
+async def migrate_specific_project(project_name: str, dry_run: bool = False, auto_import_md: bool = False) -> str:
+    """Migrate a specific project by name with comprehensive FTS import analysis and optional auto-import"""
+    if not migration_tools:
+        return "❌ Migration tools not initialized. Use `work_on_project()` first."
+    return await migration_tools.migrate_specific_project(project_name, dry_run, auto_import_md)
+
+# Backup Tools Integration (Phase 2 - 4 new tools)
+@server.tool()
+async def backup_context_db(backup_type: str = "manual", force: bool = False, verify: bool = True) -> str:
+    """Create a backup of the current context.db file"""
+    if not backup_tools:
+        return "❌ Backup tools not initialized. Use `work_on_project()` first."
+    return await backup_tools.backup_context_db(backup_type, force, verify)
+
+@server.tool()
+async def list_backups(backup_type: Optional[str] = None, include_metadata: bool = True, verify_integrity: bool = False) -> str:
+    """List all available backups with metadata"""
+    if not backup_tools:
+        return "❌ Backup tools not initialized. Use `work_on_project()` first."
+    return await backup_tools.list_backups(backup_type, include_metadata, verify_integrity)
+
+@server.tool()
+async def store_template_spec(template_name: str, template_content: str, 
+                            template_version: str = "1.0", description: str = "",
+                            project_types: str = "general", spec_phase: Optional[str] = None,
+                            workflow_system: str = "spec-workflow", update_existing: bool = True) -> str:
+    """Store complete template specification in Memory Bank"""
+    if not backup_tools:
+        return "❌ Backup tools not initialized. Use `work_on_project()` first."
+    return await backup_tools.store_template_spec(template_name, template_content, template_version, 
+                                                description, project_types, spec_phase, workflow_system, update_existing)
+
+@server.tool()
+async def discover_templates(search_query: Optional[str] = None, project_type: Optional[str] = None,
+                           spec_phase: Optional[str] = None, workflow_system: Optional[str] = None,
+                           sort_by: str = "updated_at", limit: int = 20) -> str:
+    """Discover templates based on criteria with FTS search"""
+    if not backup_tools:
+        return "❌ Backup tools not initialized. Use `work_on_project()` first."
+    return await backup_tools.discover_templates(search_query, project_type, spec_phase, workflow_system, sort_by, limit)
+
 # =============================================================================
 # SERVER STARTUP
 # =============================================================================
@@ -364,5 +494,5 @@ async def force_context_flush() -> str:
 if __name__ == "__main__":
     logger.info("🚀 Memory Bank v1.4.0 Enhanced MCP Server starting...")
     logger.info("✅ Modular architecture with preserved v1.4.0 features")
-    logger.info("📊 Tools available: 17+ core tools restored")
+    logger.info("📊 Tools available: 33 core tools (Phase 2 COMPLETE - All modules included)")
     server.run()

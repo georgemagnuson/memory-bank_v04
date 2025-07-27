@@ -95,6 +95,27 @@ Memory Bank v04 Enhanced is a Desktop Extension that provides advanced AI contex
    - Centralized backup location
    - Auto-save preferences
 
+### **Building from Source**
+
+To build your own DXT package from source:
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd memory-bank_v04
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Build DXT package
+python3 build_dxt.py
+
+# Test build without creating package
+python3 build_dxt.py --dry-run --verbose
+```
+
+See `DXT_BUILD_GUIDE.md` for detailed build instructions and customization options.
+
 ### **Quick Start**
 
 ```bash

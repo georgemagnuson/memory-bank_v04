@@ -25,6 +25,9 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+# Local Dependencies (use requirements.txt instead)
+lib/
+
 # Virtual Environment
 .venv/
 env/
@@ -65,3 +68,6 @@ test_*.db
 
 # Memory Bank test data
 test_memory_bank/
+
+# Archive directory
+archive/
