@@ -1,0 +1,74 @@
+{
+  "dxt_version": "0.1",
+  "name": "memory-bank-v2-1-enhanced",
+  "version": "2.1.1",
+  "description": "Memory Bank v2.1 Enhanced - Advanced AI collaboration memory with FTS5 + semantic search",
+  "long_description": "Memory Bank v2.1 Enhanced provides the most advanced persistent AI collaboration memory system with FTS5 full-text search, semantic query expansion, importance-weighted ranking (0-10 scale), and context validation fixes. Features revolutionary search capabilities with 10-100x speed improvement, semantic equivalents expansion, graceful fallback system, registry-based context propagation, and comprehensive tool ecosystem.",
+  
+  "author": {
+    "name": "Memory Bank Development Team",
+    "email": "support@memory-bank.dev"
+  },
+  
+  "homepage": "https://github.com/georgemagnuson/memory-bank_v04",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/georgemagnuson/memory-bank_v04"
+  },
+  "documentation": "https://github.com/georgemagnuson/memory-bank_v04/blob/main/README.md",
+  "support": "https://github.com/georgemagnuson/memory-bank_v04/issues",
+  
+  "icon": "icon.png",
+  
+  "server": {
+    "type": "python",
+    "entry_point": "server/memory_bank_mcp/main.py",
+    "mcp_config": {
+      "command": "python",
+      "args": [
+        "${__dirname}/server/memory_bank_mcp/main.py"
+      ],
+      "env": {
+        "PYTHONPATH": "${__dirname}/lib:${__dirname}/server:${__dirname}"
+      }
+    }
+  },
+  
+  "keywords": [
+    "memory",
+    "collaboration", 
+    "AI",
+    "context",
+    "search",
+    "FTS5",
+    "semantic",
+    "importance",
+    "ranking",
+    "database",
+    "sqlite",
+    "mcp",
+    "claude",
+    "persistence",
+    "registry"
+  ],
+  
+  "categories": [
+    "productivity",
+    "development-tools",
+    "collaboration", 
+    "database",
+    "search"
+  ],
+  
+  "permissions": {
+    "file_system": {
+      "read": true,
+      "write": true,
+      "reason": "Read/write project databases and context files"
+    }
+  },
+  
+  "requirements": {
+    "python": ">=3.8"
+  }
+}

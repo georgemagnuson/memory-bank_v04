@@ -1,0 +1,402 @@
+"""
+migration_modules/database_migrator.py
+Generated: 2025-07-30.1304
+Purpose: Database schema migration from v1.4.0 to v2.0 for Memory Bank
+Migrates from unified_documents table to pure documents table architecture
+"""
+
+import logging
+import sqlite3
+import shutil
+from pathlib import Path
+from typing import Dict, List, Optional, Any
+from datetime import datetime, timezone
+
+logger = logging.getLogger("memory_bank_mcp.migration.database")
+
+
+class DatabaseMigrator:
+    """Migrate Memory Bank database from v1.4.0 to v2.0 schema"""
+    
+    def __init__(self, db_path: Path):
+        self.db_path = db_path
+        self.backup_path = None
+        
+    def migrate_to_v2_0(self, dry_run: bool = False) -> Dict[str, Any]:
+        """
+        Migrate database from v1.4.0 (unified_documents) to v2.0 (documents) schema
+        
+        Args:
+            dry_run: If True, analyze but don't make changes
+            
+        Returns:
+            Migration report with statistics and results
+        """
+        report = {
+            'migration_type': 'v1.4.0_to_v2.0',
+            'dry_run': dry_run,
+            'start_time': datetime.now(timezone.utc).isoformat(),
+            'source_db': str(self.db_path),
+            'backup_created': False,
+            'schema_version_before': None,
+            'schema_version_after': None,
+            'tables_migrated': {},
+            'records_migrated': 0,
+            'errors': [],
+            'warnings': [],
+            'status': 'starting'
+        }
+        
+        try:
+            # Step 1: Create backup
+            if not dry_run:
+                self.backup_path = self._create_backup()
+                report['backup_created'] = True
+                report['backup_path'] = str(self.backup_path)
+            
+            # Step 2: Analyze current schema
+            current_version = self._get_database_version()
+            report['schema_version_before'] = current_version
+            
+            # Step 3: Check if migration is needed
+            migration_analysis = self._analyze_migration_requirements()
+            report.update(migration_analysis)
+            
+            if not migration_analysis['migration_needed']:
+                report['status'] = 'no_migration_needed'
+                return report
+            
+            # Step 4: Perform migration
+            if not dry_run:
+                migration_results = self._perform_v2_migration()
+                report.update(migration_results)
+                
+                # Step 5: Update schema version
+                self._set_database_version(4)  # v2.0 = version 4
+                report['schema_version_after'] = 4
+            
+            report['status'] = 'completed' if not dry_run else 'analysis_completed'
+            report['end_time'] = datetime.now(timezone.utc).isoformat()
+            
+        except Exception as e:
+            logger.error(f"Migration failed: {e}")
+            report['errors'].append(f"Migration failed: {str(e)}")
+            report['status'] = 'failed'
+            
+            # Restore backup if migration failed
+            if not dry_run and self.backup_path:
+                try:
+                    self._restore_backup()
+                    report['warnings'].append("Database restored from backup due to migration failure")
+                except Exception as restore_error:
+                    report['errors'].append(f"Failed to restore backup: {str(restore_error)}")
+        
+        return report
+    
+    def _create_backup(self) -> Path:
+        """Create backup of current database"""
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_path = self.db_path.parent / f"context_backup_v1.4.0_{timestamp}.db"
+        
+        shutil.copy2(self.db_path, backup_path)
+        logger.info(f"Database backup created: {backup_path}")
+        
+        return backup_path
+    
+    def _restore_backup(self) -> None:
+        """Restore database from backup"""
+        if self.backup_path and self.backup_path.exists():
+            shutil.copy2(self.backup_path, self.db_path)
+            logger.info(f"Database restored from backup: {self.backup_path}")
+    
+    def _get_database_version(self) -> int:
+        """Get current database schema version"""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("PRAGMA user_version")
+            return cursor.fetchone()[0]
+    
+    def _set_database_version(self, version: int) -> None:
+        """Set database schema version"""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(f"PRAGMA user_version = {version}")
+            conn.commit()
+    
+    def _analyze_migration_requirements(self) -> Dict[str, Any]:
+        """Analyze what migration steps are needed"""
+        analysis = {
+            'migration_needed': False,
+            'has_unified_documents': False,
+            'has_documents_v2': False,
+            'has_legacy_tables': False,
+            'unified_documents_count': 0,
+            'legacy_tables_count': {},
+            'migration_strategy': None
+        }
+        
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            
+            # Check for existing tables
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+            tables = [row[0] for row in cursor.fetchall()]
+            
+            # Check for unified_documents table
+            if 'unified_documents' in tables:
+                analysis['has_unified_documents'] = True
+                cursor.execute("SELECT COUNT(*) FROM unified_documents")
+                analysis['unified_documents_count'] = cursor.fetchone()[0]
+            
+            # Check for v2.0 documents table
+            if 'documents' in tables:
+                analysis['has_documents_v2'] = True
+            
+            # Check for legacy tables
+            legacy_tables = ['discussions', 'artifacts', 'code_iterations', 'plans']
+            for table in legacy_tables:
+                if table in tables:
+                    analysis['has_legacy_tables'] = True
+                    cursor.execute(f"SELECT COUNT(*) FROM {table}")
+                    analysis['legacy_tables_count'][table] = cursor.fetchone()[0]
+            
+            # Determine migration strategy
+            if analysis['has_unified_documents'] and not analysis['has_documents_v2']:
+                analysis['migration_needed'] = True
+                analysis['migration_strategy'] = 'unified_to_documents'
+            elif analysis['has_documents_v2']:
+                analysis['migration_strategy'] = 'already_v2.0'
+            elif analysis['has_legacy_tables'] and not analysis['has_unified_documents']:
+                analysis['migration_needed'] = True
+                analysis['migration_strategy'] = 'legacy_to_documents'
+            else:
+                analysis['migration_strategy'] = 'unknown_schema'
+        
+        return analysis
+    
+    def _perform_v2_migration(self) -> Dict[str, Any]:
+        """Perform the actual migration to v2.0 schema"""
+        results = {
+            'tables_created': [],
+            'records_migrated': 0,
+            'migration_steps': []
+        }
+        
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            
+            # Step 1: Create v2.0 documents table
+            self._create_documents_table(cursor)
+            results['tables_created'].append('documents')
+            results['migration_steps'].append('Created documents table')
+            
+            # Step 2: Migrate data from unified_documents to documents
+            migrated_count = self._migrate_unified_documents_to_documents(cursor)
+            results['records_migrated'] += migrated_count
+            results['migration_steps'].append(f'Migrated {migrated_count} records from unified_documents')
+            
+            # Step 3: Create FTS5 table for documents
+            self._create_documents_fts(cursor)
+            results['tables_created'].append('documents_fts')
+            results['migration_steps'].append('Created documents FTS5 table')
+            
+            # Step 4: Create indexes
+            self._create_documents_indexes(cursor)
+            results['migration_steps'].append('Created indexes for documents table')
+            
+            conn.commit()
+        
+        return results
+    
+    def _create_documents_table(self, cursor) -> None:
+        """Create the v2.0 documents table"""
+        
+        # Read the v2.0 schema template
+        schema_template_path = Path(__file__).parent.parent / "schema_v2_0_template.sql"
+        
+        if schema_template_path.exists():
+            # Use the template if available
+            with open(schema_template_path, 'r') as f:
+                schema_sql = f.read()
+            
+            # Extract just the documents table creation
+            documents_table_start = schema_sql.find("CREATE TABLE documents")
+            if documents_table_start != -1:
+                documents_table_end = schema_sql.find(");", documents_table_start) + 2
+                documents_table_sql = schema_sql[documents_table_start:documents_table_end]
+                cursor.execute(documents_table_sql)
+                return
+        
+        # Fallback: Create table manually using v2.0 schema (updated for cross-project support)
+        cursor.execute("""
+        CREATE TABLE documents (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            uuid TEXT NOT NULL,
+            project_uuid TEXT NOT NULL,
+            source_table TEXT NOT NULL,
+            source_id INTEGER,
+            document_type TEXT NOT NULL,
+            title TEXT,
+            content TEXT NOT NULL,
+            summary TEXT,
+            tags TEXT DEFAULT '[]',
+            metadata TEXT DEFAULT '{}',
+            created_at TIMESTAMP,
+            updated_at TIMESTAMP,
+            imported_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            status TEXT DEFAULT 'active',
+            FOREIGN KEY (project_uuid) REFERENCES projects (uuid)
+        )
+        """)
+    
+    def _migrate_unified_documents_to_documents(self, cursor) -> int:
+        """Migrate records from unified_documents to documents table"""
+        
+        # Get the project_uuid for memory-bank_v04 (this project)
+        cursor.execute("SELECT uuid FROM projects WHERE name = ? OR path LIKE ?", 
+                      ('memory-bank_v04', '%memory-bank_v04%'))
+        project_result = cursor.fetchone()
+        if project_result:
+            memory_bank_v04_project_uuid = project_result[0]
+        else:
+            # Create memory-bank_v04 project if it doesn't exist
+            import uuid as uuid_module
+            memory_bank_v04_project_uuid = str(uuid_module.uuid4())
+            cursor.execute("""
+            INSERT INTO projects (uuid, name, path, description)
+            VALUES (?, 'memory-bank_v04', '/Users/georgemagnuson/Documents/GitHub/memory-bank_v04', 
+                    'Enhanced Memory Bank MCP v2 with documents_v2 schema')
+            """, (memory_bank_v04_project_uuid,))
+        
+        # Get all records from unified_documents (mapping original_uuid -> uuid)
+        cursor.execute("""
+        SELECT original_uuid, source_table, source_id, document_type, title, content, 
+               summary, tags, metadata, created_at, updated_at, status
+        FROM unified_documents
+        ORDER BY created_at
+        """)
+        
+        unified_records = cursor.fetchall()
+        migrated_count = 0
+        
+        for record in unified_records:
+            original_uuid, source_table, source_id, document_type, title, content, \
+            summary, tags, metadata, created_at, updated_at, status = record
+            
+            # Insert into documents table with v2.0 schema (uuid replaces original_uuid)
+            cursor.execute("""
+            INSERT INTO documents 
+            (uuid, project_uuid, source_table, source_id, document_type, title, content, 
+             summary, tags, metadata, created_at, updated_at, imported_at, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)
+            """, (original_uuid, memory_bank_v04_project_uuid, source_table, source_id, 
+                  document_type, title, content, summary, tags, metadata, 
+                  created_at, updated_at, status or 'active'))
+            
+            migrated_count += 1
+        
+        return migrated_count
+    
+    def _create_documents_fts(self, cursor) -> None:
+        """Create FTS5 table for documents"""
+        cursor.execute("""
+        CREATE VIRTUAL TABLE documents_fts USING fts5(
+            title, content, document_type, 
+            content='documents', 
+            content_rowid='id'
+        )
+        """)
+        
+        # Populate FTS table
+        cursor.execute("""
+        INSERT INTO documents_fts(rowid, title, content, document_type)
+        SELECT id, title, content, document_type FROM documents
+        """)
+    
+    def _create_documents_indexes(self, cursor) -> None:
+        """Create indexes for the documents table"""
+        indexes = [
+            "CREATE INDEX idx_documents_uuid ON documents(uuid)",
+            "CREATE INDEX idx_documents_project_uuid ON documents(project_uuid)",
+            "CREATE INDEX idx_documents_document_type ON documents(document_type)",
+            "CREATE INDEX idx_documents_source_table ON documents(source_table)",
+            "CREATE INDEX idx_documents_status ON documents(status)",
+            "CREATE INDEX idx_documents_created_at ON documents(created_at)"
+        ]
+        
+        for index_sql in indexes:
+            cursor.execute(index_sql)
+    
+    def print_migration_report(self, report: Dict[str, Any]) -> None:
+        """Print formatted migration report"""
+        
+        print(f"\n🔄 **DATABASE MIGRATION REPORT**")
+        print(f"═══════════════════════════════════")
+        
+        print(f"📁 **Source:** {report['source_db']}")
+        print(f"🔄 **Migration:** {report['migration_type']}")
+        print(f"⏰ **Started:** {report['start_time']}")
+        
+        if report.get('dry_run'):
+            print(f"🔍 **Mode:** Analysis Only (Dry Run)")
+        else:
+            print(f"🚀 **Mode:** Full Migration")
+        
+        # Migration analysis
+        if 'migration_needed' in report:
+            if report['migration_needed']:
+                print(f"\n✅ **Migration Required:** {report['migration_strategy']}")
+            else:
+                print(f"\n⏭️  **Migration:** Not needed - {report['migration_strategy']}")
+        
+        # Source data analysis
+        print(f"\n📊 **SOURCE DATA:**")
+        if report.get('unified_documents_count'):
+            print(f"• 📄 Unified Documents: {report['unified_documents_count']}")
+        
+        if report.get('legacy_tables_count'):
+            for table, count in report['legacy_tables_count'].items():
+                print(f"• 📋 {table}: {count}")
+        
+        # Migration results
+        if report.get('records_migrated'):
+            print(f"\n🔄 **MIGRATION RESULTS:**")
+            print(f"• 📄 Records Migrated: {report['records_migrated']}")
+            
+            if report.get('tables_created'):
+                print(f"• 🆕 Tables Created: {', '.join(report['tables_created'])}")
+        
+        # Version info
+        if report.get('schema_version_before') is not None:
+            print(f"\n📚 **SCHEMA VERSIONS:**")
+            print(f"• Before: v{report['schema_version_before']}")
+            if report.get('schema_version_after') is not None:
+                print(f"• After: v{report['schema_version_after']}")
+        
+        # Status
+        status = report.get('status', 'unknown')
+        if status == 'completed':
+            print(f"\n✅ **Migration Completed Successfully**")
+        elif status == 'analysis_completed':
+            print(f"\n🔍 **Analysis Completed - Ready for Migration**")
+        elif status == 'no_migration_needed':
+            print(f"\n⏭️  **No Migration Required**")
+        elif status == 'failed':
+            print(f"\n❌ **Migration Failed**")
+        
+        # Backup info
+        if report.get('backup_created'):
+            print(f"\n💾 **Backup:** Created at {report.get('backup_path', 'Unknown')}")
+        
+        # Errors and warnings
+        if report.get('errors'):
+            print(f"\n🚨 **ERRORS:**")
+            for error in report['errors']:
+                print(f"  • {error}")
+        
+        if report.get('warnings'):
+            print(f"\n⚠️  **WARNINGS:**")
+            for warning in report['warnings']:
+                print(f"  • {warning}")
+        
+        print(f"\n" + "═" * 35)

@@ -1,0 +1,64 @@
+{
+  "dxt_version": "0.1",
+  "name": "memory-bank-v21-enhanced",
+  "version": "2.1.0",
+  "description": "Memory Bank v2.1 Enhanced with modular migration system and clean schema architecture",
+  "author": {
+    "name": "Memory Bank Team",
+    "email": "support@memorybank.ai"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/memory-bank/memory-bank-v21"
+  },
+  "license": "MIT",
+  "keywords": ["memory", "database", "ai", "collaboration", "migration", "v2.1", "modular"],
+  "server": {
+    "type": "python",
+    "entry_point": "server/memory_bank_mcp/__main__.py",
+    "mcp_config": {
+      "command": "python",
+      "args": ["-m", "memory_bank_mcp"],
+      "env": {
+        "PYTHONPATH": "${__dirname}/server:${__dirname}/migration_v21:${__dirname}"
+      },
+      "cwd": "${__dirname}"
+    }
+  },
+  "permissions": {
+    "filesystem": {
+      "read": true,
+      "write": true,
+      "description": "Required for database operations and project file management"
+    },
+    "network": {
+      "enabled": false,
+      "description": "Local-only operation for security"
+    }
+  },
+  "features": [
+    "🏗️ Modular Architecture - No monolithic files",
+    "🔄 Enhanced Migration System - Table count-based detection",
+    "📊 Complete Consolidation - 48→18 table optimization",
+    "🧹 Automatic Legacy Cleanup - Clean v2.1 schema",
+    "💾 Production Safety - Backup, rollback, dry-run",
+    "🔍 FTS5 Search - Enhanced full-text capabilities",
+    "🎯 CLI Integration - Command-line migration tools",
+    "🚀 Enhanced work_on_project - Auto-migration support"
+  ],
+  "requirements": {
+    "python": ">=3.8"
+  },
+  "changelog": {
+    "2.1.0": {
+      "date": "2025-08-04",
+      "changes": [
+        "Complete modular architecture implementation",
+        "Enhanced migration system with table count detection",
+        "Production-ready safety features and error handling",
+        "CLI interface for advanced migration operations",
+        "Backwards compatibility with all existing Memory Bank features"
+      ]
+    }
+  }
+}
